@@ -10,6 +10,7 @@ const STORAGE_KEY = "threeBookwormsStateV1";
 const USER_KEY = "threeBookwormsUserId";
 const seedFinishedBooks = window.THREE_BOOKWORMS_FINISHED_BOOKS || {};
 const validUserIds = ["yuki", "momo", "lusi"];
+const lockedUserId = userIdFromPath() || userIdFromQuery();
 
 const initialState = {
   currentUserId: initialUserId(),
@@ -74,15 +75,24 @@ function loadState() {
 }
 
 function initialUserId() {
-  const params = new URLSearchParams(window.location.search);
-  const urlUser = params.get("user")?.toLowerCase();
-  if (validUserIds.includes(urlUser)) {
-    localStorage.setItem(USER_KEY, urlUser);
-    return urlUser;
+  if (lockedUserId) {
+    localStorage.setItem(USER_KEY, lockedUserId);
+    return lockedUserId;
   }
 
   const savedUser = localStorage.getItem(USER_KEY);
   return validUserIds.includes(savedUser) ? savedUser : "yuki";
+}
+
+function userIdFromPath() {
+  const pathUser = window.location.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  return validUserIds.includes(pathUser) ? pathUser : "";
+}
+
+function userIdFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const queryUser = params.get("user")?.toLowerCase();
+  return validUserIds.includes(queryUser) ? queryUser : "";
 }
 
 function normalizeVisualState(nextState) {
@@ -197,6 +207,7 @@ async function persistSharedState() {
 }
 
 function switchUser(userId) {
+  if (lockedUserId) return;
   if (!validUserIds.includes(userId)) return;
   localStorage.setItem(USER_KEY, userId);
   const url = new URL(window.location.href);
@@ -302,17 +313,7 @@ function renderShell(content) {
             <p class="brand-subtitle">当前身份：${escapeHtml(currentUser().name)} · ${syncLabel}</p>
           </div>
         </div>
-        <div class="identity-switcher" aria-label="选择身份">
-          ${state.people
-            .map(
-              (person) => `
-                <button class="identity-button ${person.id === state.currentUserId ? "is-active" : ""}" data-action="switch-user" data-user-id="${person.id}">
-                  ${escapeHtml(person.name)}
-                </button>
-              `,
-            )
-            .join("")}
-        </div>
+        ${renderIdentityControl()}
         <nav class="nav">
           <button class="nav-button ${activeHome}" data-route="home">首页</button>
           <button class="nav-button ${activeFinished}" data-route="finished">我的已读</button>
@@ -321,6 +322,31 @@ function renderShell(content) {
       ${content}
       ${state.modal ? renderModal() : ""}
       ${state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : ""}
+    </div>
+  `;
+}
+
+function renderIdentityControl() {
+  if (lockedUserId) {
+    return `
+      <div class="identity-locked" aria-label="固定身份">
+        <span>固定身份</span>
+        <strong>${escapeHtml(currentUser().name)}</strong>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="identity-switcher" aria-label="选择身份">
+      ${state.people
+        .map(
+          (person) => `
+            <button class="identity-button ${person.id === state.currentUserId ? "is-active" : ""}" data-action="switch-user" data-user-id="${person.id}">
+              ${escapeHtml(person.name)}
+            </button>
+          `,
+        )
+        .join("")}
     </div>
   `;
 }

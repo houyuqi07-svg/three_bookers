@@ -181,7 +181,9 @@ function sendJson(response, statusCode, payload) {
 }
 
 function sendStatic(request, response, pathname) {
-  const safePath = pathname === "/" ? "/index.html" : pathname;
+  const firstSegment = pathname.split("/").filter(Boolean)[0];
+  const rolePaths = new Set(["yuki", "momo", "lusi"]);
+  const safePath = pathname === "/" || rolePaths.has(firstSegment) ? "/index.html" : pathname;
   const filePath = path.normalize(path.join(rootDir, safePath));
 
   if (!filePath.startsWith(rootDir) || filePath.startsWith(dataDir)) {
@@ -219,7 +221,7 @@ function printUrls() {
   for (const address of addresses) {
     console.log(`手机同 Wi-Fi 可访问: ${address}`);
   }
-  console.log("专属入口示例: /?user=yuki /?user=momo /?user=lusi");
+  console.log("专属入口示例: /yuki /momo /lusi");
 }
 
 if (!hasSupabase()) {
