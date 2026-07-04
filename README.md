@@ -18,9 +18,9 @@ http://192.168.x.x:4173
 4. 三个人可以分别打开自己的专属入口：
 
 ```text
-http://192.168.x.x:4173/?user=yuki
-http://192.168.x.x:4173/?user=momo
-http://192.168.x.x:4173/?user=lusi
+http://192.168.x.x:4173/yuki
+http://192.168.x.x:4173/momo
+http://192.168.x.x:4173/lusi
 ```
 
 也可以打开普通地址后，在页面顶部切换身份。
@@ -76,13 +76,13 @@ SUPABASE_STATE_ID=main
 假设公网网址是：
 
 ```text
-https://three-bookworms.onrender.com
+https://three-bookers.onrender.com
 ```
 
 三个人可以分别使用：
 
 ```text
-https://three-bookworms.onrender.com/?user=yuki
-https://three-bookworms.onrender.com/?user=momo
-https://three-bookworms.onrender.com/?user=lusi
+https://three-bookers.onrender.com/yuki
+https://three-bookers.onrender.com/momo
+https://three-bookers.onrender.com/lusi
 ```
