@@ -417,7 +417,7 @@ function renderShell(content) {
         <div class="header-actions">
           <div class="total-stars" aria-label="${escapeHtml(user.name)} 累计星星 ${totalStars} 颗">
             <strong><span class="total-star-icon">★</span>${totalStars}</strong>
-            <span>累计星星</span>
+            <span class="total-stars-label">累计星星</span>
           </div>
           <div class="user-pill" aria-label="当前用户">${escapeHtml(user.name)}</div>
         </div>

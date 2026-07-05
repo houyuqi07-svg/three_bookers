@@ -176,7 +176,7 @@ button {
   line-height: 1.05;
 }
 
-.total-star-icon {
+.total-stars .total-star-icon {
   display: inline-block;
   color: #ffd84d;
   font-size: 37px;
@@ -187,7 +187,7 @@ button {
   transform: translateY(1px);
 }
 
-.total-stars span {
+.total-stars-label {
   margin-top: 5px;
   color: var(--muted);
   font-size: 13px;
@@ -1538,11 +1538,11 @@ button {
     font-size: 19px;
   }
 
-  .total-star-icon {
+  .total-stars .total-star-icon {
     font-size: 30px;
   }
 
-  .total-stars span {
+  .total-stars-label {
     margin-top: 3px;
     font-size: 10px;
   }
