@@ -84,6 +84,12 @@ function initialUserId() {
   return validUserIds.includes(savedUser) ? savedUser : "yuki";
 }
 
+function stableUserId(preferredUserId = state?.currentUserId) {
+  const nextUserId = lockedUserId || (validUserIds.includes(preferredUserId) ? preferredUserId : initialUserId());
+  localStorage.setItem(USER_KEY, nextUserId);
+  return nextUserId;
+}
+
 function userIdFromPath() {
   const pathUser = window.location.pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   return validUserIds.includes(pathUser) ? pathUser : "";
@@ -138,7 +144,7 @@ function saveState() {
 }
 
 function setState(patch, shouldSave = true) {
-  state = { ...state, ...patch };
+  state = { ...state, ...patch, currentUserId: stableUserId(patch.currentUserId) };
   if (shouldSave) {
     saveState();
     persistSharedState();
@@ -153,10 +159,11 @@ async function loadSharedState() {
     const data = await response.json();
     if (!Array.isArray(data.people)) throw new Error("Invalid shared state");
 
-    const normalized = normalizeVisualState({ ...state, people: data.people });
+    const currentUserId = stableUserId();
+    const normalized = normalizeVisualState({ ...state, currentUserId, people: data.people });
     state = {
       ...normalized,
-      currentUserId: initialUserId(),
+      currentUserId,
       page: "home",
       modal: null,
       toast: "",
@@ -172,14 +179,18 @@ async function loadSharedState() {
 }
 
 async function refreshSharedPeople() {
-  if (state.syncStatus !== "shared" || state.page === "note" || state.modal) return;
+  if (state.syncStatus !== "shared" || ["add", "note"].includes(state.page) || state.modal) return;
+
+  const activeElement = document.activeElement;
+  if (activeElement?.matches?.("input, textarea")) return;
 
   try {
     const response = await fetch("/api/state", { cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
     if (!Array.isArray(data.people)) return;
-    const normalized = normalizeVisualState({ ...state, people: data.people });
+    const currentUserId = stableUserId();
+    const normalized = normalizeVisualState({ ...state, currentUserId, people: data.people });
     state = { ...state, people: normalized.people };
     saveState();
     render();
@@ -204,8 +215,9 @@ async function persistSharedState() {
     });
     if (!response.ok) throw new Error("Save failed");
     const data = await response.json();
-    const normalized = normalizeVisualState({ ...state, people: data.people || people });
-    state = { ...normalized, syncStatus: "shared" };
+    const currentUserId = stableUserId();
+    const normalized = normalizeVisualState({ ...state, currentUserId, people: data.people || people });
+    state = { ...normalized, currentUserId, syncStatus: "shared" };
     saveState();
     render();
   } catch {
@@ -247,7 +259,8 @@ function allEchoes() {
 }
 
 function currentUser() {
-  return state.people.find((person) => person.id === state.currentUserId) || state.people[0];
+  const currentUserId = stableUserId();
+  return state.people.find((person) => person.id === currentUserId) || state.people[0];
 }
 
 function personById(id) {
@@ -973,8 +986,9 @@ async function saveComment(form) {
       });
       if (!response.ok) throw new Error("Comment save failed");
       const data = await response.json();
-      const normalized = normalizeVisualState({ ...state, people: data.people });
-      state = { ...normalized, syncStatus: "shared" };
+      const currentUserId = stableUserId();
+      const normalized = normalizeVisualState({ ...state, currentUserId, people: data.people });
+      state = { ...normalized, currentUserId, syncStatus: "shared" };
       saveState();
       render();
       return;
