@@ -170,17 +170,21 @@ button {
 .total-stars strong {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 24px;
+  gap: 8px;
+  font-size: 25px;
   font-weight: 950;
   line-height: 1.05;
 }
 
 .total-star-icon {
-  color: var(--gold);
-  font-size: 30px;
+  display: inline-block;
+  color: #ffd84d;
+  font-size: 37px;
   line-height: 1;
-  text-shadow: 0 2px 0 rgba(17, 17, 15, 0.18);
+  text-shadow:
+    0 2px 0 rgba(17, 17, 15, 0.2),
+    0 0 10px rgba(255, 216, 77, 0.58);
+  transform: translateY(1px);
 }
 
 .total-stars span {
@@ -1530,12 +1534,12 @@ button {
   }
 
   .total-stars strong {
-    gap: 4px;
-    font-size: 18px;
+    gap: 5px;
+    font-size: 19px;
   }
 
   .total-star-icon {
-    font-size: 23px;
+    font-size: 30px;
   }
 
   .total-stars span {
