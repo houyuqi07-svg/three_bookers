@@ -111,14 +111,22 @@ function normalizeVisualState(nextState) {
           ? {
               ...book,
               coverColor,
+              comments: Array.isArray(book.comments) ? book.comments : [],
+            }
+          : book;
+      const normalizeBook = (book) =>
+        book
+          ? {
+              ...softenBook(book),
+              comments: Array.isArray(book.comments) ? book.comments : [],
             }
           : book;
 
       return {
         ...person,
         avatarColor: person.id === "yuki" ? "#d9c8ff" : person.avatarColor,
-        currentBook: softenBook(person.currentBook),
-        finishedBooks: person.finishedBooks.map(softenBook),
+        currentBook: normalizeBook(person.currentBook),
+        finishedBooks: person.finishedBooks.map(normalizeBook),
       };
     }),
   };
@@ -164,7 +172,7 @@ async function loadSharedState() {
 }
 
 async function refreshSharedPeople() {
-  if (state.syncStatus !== "shared" || state.page !== "home" || state.modal) return;
+  if (state.syncStatus !== "shared" || state.page === "note" || state.modal) return;
 
   try {
     const response = await fetch("/api/state", { cache: "no-store" });
@@ -215,6 +223,27 @@ function switchUser(userId) {
   window.history.replaceState({}, "", url);
   setState({ currentUserId: userId, page: "home", selectedBookId: null, modal: null }, false);
   saveState();
+}
+
+function allEchoes() {
+  return state.people
+    .flatMap((person) =>
+      person.finishedBooks
+        .filter((book) => book.note?.body)
+        .map((book) => ({
+          ...book,
+          ownerId: person.id,
+          ownerName: person.name,
+          ownerAvatar: person.avatar,
+          ownerColor: person.avatarColor,
+          comments: Array.isArray(book.comments) ? book.comments : [],
+        })),
+    )
+    .sort((a, b) => {
+      const dateCompare = new Date(`${b.finishedAt || "1900-01-01"}T00:00:00`) - new Date(`${a.finishedAt || "1900-01-01"}T00:00:00`);
+      if (dateCompare !== 0) return dateCompare;
+      return b.id.localeCompare(a.id);
+    });
 }
 
 function currentUser() {
@@ -294,8 +323,6 @@ function pageHeader(title, subtitle = "") {
 }
 
 function renderShell(content) {
-  const activeHome = state.page === "home" ? "is-active" : "";
-  const activeFinished = state.page === "finished" ? "is-active" : "";
   const syncLabel = {
     loading: "连接中",
     shared: "共享中",
@@ -314,15 +341,38 @@ function renderShell(content) {
           </div>
         </div>
         ${renderIdentityControl()}
-        <nav class="nav">
-          <button class="nav-button ${activeHome}" data-route="home">首页</button>
-          <button class="nav-button ${activeFinished}" data-route="finished">我的已读</button>
-        </nav>
       </header>
       ${content}
+      ${renderBottomNav()}
       ${state.modal ? renderModal() : ""}
       ${state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : ""}
     </div>
+  `;
+}
+
+function navSection() {
+  if (["finished", "note"].includes(state.page)) return "mine";
+  if (state.page === "echoes") return "echoes";
+  return "home";
+}
+
+function renderBottomNav() {
+  const active = navSection();
+  return `
+    <nav class="bottom-nav" aria-label="主导航">
+      <button class="bottom-nav-item ${active === "home" ? "is-active" : ""}" data-route="home">
+        <span>★</span>
+        打卡
+      </button>
+      <button class="bottom-nav-item ${active === "echoes" ? "is-active" : ""}" data-route="echoes">
+        <span>◌</span>
+        回响
+      </button>
+      <button class="bottom-nav-item ${active === "mine" ? "is-active" : ""}" data-route="finished">
+        <span>☻</span>
+        我的
+      </button>
+    </nav>
   `;
 }
 
@@ -353,7 +403,7 @@ function renderIdentityControl() {
 
 function renderHome() {
   return renderShell(`
-    <main class="page">
+    <main class="page page-checkin">
       ${pageHeader("今天读到哪里了？", "三个人各自保留一本当前在读，打卡只为自己的这本书点亮一颗星。")}
       ${renderDailyCheckin()}
       <section class="reading-grid">
@@ -361,6 +411,90 @@ function renderHome() {
       </section>
     </main>
   `);
+}
+
+function renderEchoes() {
+  const echoes = allEchoes();
+  return renderShell(`
+    <main class="page page-echoes">
+      ${pageHeader("回响", "每一本读完的书，都留下一点回声。")}
+      ${
+        echoes.length
+          ? `<section class="echo-feed">${echoes.map(renderEchoCard).join("")}</section>`
+          : `<section class="panel empty-state">还没有读后感。读完一本书并写下笔记后，它会出现在这里。</section>`
+      }
+    </main>
+  `);
+}
+
+function renderEchoCard(book) {
+  return `
+    <article class="echo-card">
+      <div class="echo-meta">
+        <div class="friend">
+          <div class="avatar echo-avatar" style="--avatar:${book.ownerColor}">${escapeHtml(book.ownerAvatar)}</div>
+          <div>
+            <p class="friend-name">${escapeHtml(book.ownerName)}</p>
+            <p class="friend-state">${formatDate(book.finishedAt)}</p>
+          </div>
+        </div>
+        <span class="echo-stars">⭐ ${book.stars || 0}</span>
+      </div>
+      <div class="echo-book">
+        <h3>《${escapeHtml(book.title)}》</h3>
+        ${book.author ? `<p>${escapeHtml(book.author)}</p>` : ""}
+      </div>
+      <div class="echo-body">${formatNoteBody(book.note.body)}</div>
+      <section class="comments">
+        <h4>评论</h4>
+        ${renderComments(book.comments)}
+        <form class="comment-form" data-form="comment" data-book-id="${book.id}">
+          <input name="content" required autocomplete="off" placeholder="写一句回响..." />
+          <button class="button secondary" type="submit">发送</button>
+        </form>
+      </section>
+    </article>
+  `;
+}
+
+function formatNoteBody(body = "") {
+  return escapeHtml(body)
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
+
+function renderComments(comments = []) {
+  if (!comments.length) return `<p class="comment-empty">还没有评论。</p>`;
+  return `
+    <div class="comment-list">
+      ${comments
+        .map(
+          (comment) => `
+            <div class="comment-item">
+              <div class="comment-head">
+                <strong>${escapeHtml(comment.userName || "朋友")}</strong>
+                <span>${formatDateTime(comment.createdAt)}</span>
+              </div>
+              <p>${escapeHtml(comment.content)}</p>
+            </div>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function formatDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function renderDailyCheckin() {
@@ -477,7 +611,7 @@ function renderFriendRow(person, isMine, status) {
 
 function renderAddBook() {
   return renderShell(`
-    <main class="page form-page">
+    <main class="page form-page page-checkin">
       ${pageHeader("添加在读书籍", "同一时间只保留一本当前在读。")}
       <section class="panel">
         <form class="form" data-form="add-book">
@@ -506,8 +640,8 @@ function renderAddBook() {
 function renderFinished() {
   const user = currentUser();
   return renderShell(`
-    <main class="page finished-page">
-      ${pageHeader("我的已读", "读完的书会留在这里，笔记可以稍后慢慢补。")}
+    <main class="page finished-page page-mine">
+      ${pageHeader("我的", "已读书籍、个人笔记和还没补完的读后感都在这里。")}
       ${
         user.finishedBooks.length
           ? `<section class="finished-list">${user.finishedBooks.map(renderFinishedItem).join("")}</section>`
@@ -545,7 +679,7 @@ function renderNote() {
   if (!book) return renderFinished();
 
   return renderShell(`
-    <main class="page note-page">
+    <main class="page note-page page-mine">
       ${pageHeader(`《${escapeHtml(book.title)}》`, "读书笔记")}
       <section class="panel">
         <form class="form" data-form="note">
@@ -620,6 +754,7 @@ function renderModal() {
 function render() {
   const pages = {
     home: renderHome,
+    echoes: renderEchoes,
     add: renderAddBook,
     finished: renderFinished,
     note: renderNote,
@@ -707,6 +842,7 @@ function finishBook(writeNow) {
     ...book,
     finishedAt: todayKey(),
     note: { title: "", body: "" },
+    comments: [],
   };
 
   const people = state.people.map((person) =>
@@ -796,6 +932,60 @@ function saveNote(form) {
   showToast("读书笔记已保存。");
 }
 
+function addCommentToPeople(people, bookId, comment) {
+  return people.map((person) => ({
+    ...person,
+    finishedBooks: person.finishedBooks.map((book) =>
+      book.id === bookId
+        ? {
+            ...book,
+            comments: [...(Array.isArray(book.comments) ? book.comments : []), comment],
+          }
+        : book,
+    ),
+  }));
+}
+
+async function saveComment(form) {
+  const content = form.content.value.trim();
+  const bookId = form.dataset.bookId;
+  if (!content || !bookId) return;
+
+  const user = currentUser();
+  const comment = {
+    id: makeId("comment"),
+    noteId: bookId,
+    bookId,
+    userId: user.id,
+    userName: user.name,
+    content,
+    createdAt: new Date().toISOString(),
+  };
+
+  form.content.value = "";
+
+  if (state.syncStatus === "shared") {
+    try {
+      const response = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(comment),
+      });
+      if (!response.ok) throw new Error("Comment save failed");
+      const data = await response.json();
+      const normalized = normalizeVisualState({ ...state, people: data.people });
+      state = { ...normalized, syncStatus: "shared" };
+      saveState();
+      render();
+      return;
+    } catch {
+      showToast("评论暂时没有同步成功，已保存在本机。");
+    }
+  }
+
+  setState({ people: addCommentToPeople(state.people, bookId, comment) });
+}
+
 app.addEventListener("click", (event) => {
   const routeButton = event.target.closest("[data-route]");
   if (routeButton) {
@@ -830,6 +1020,7 @@ app.addEventListener("submit", (event) => {
   const form = event.target;
   if (form.dataset.form === "add-book") addBook(form);
   if (form.dataset.form === "note") saveNote(form);
+  if (form.dataset.form === "comment") saveComment(form);
 });
 
 render();

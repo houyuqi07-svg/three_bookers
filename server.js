@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const crypto = require("crypto");
 const { URL } = require("url");
 
 const rootDir = __dirname;
@@ -172,6 +173,94 @@ function writeState(nextState) {
   return cleanState;
 }
 
+async function readAppState() {
+  return hasSupabase() ? await readSupabaseState() : readState();
+}
+
+async function writeAppState(nextState) {
+  return hasSupabase() ? await writeSupabaseState(nextState) : writeState(nextState);
+}
+
+function normalizeBookComments(state) {
+  return {
+    people: state.people.map((person) => ({
+      ...person,
+      finishedBooks: person.finishedBooks.map((book) => ({
+        ...book,
+        comments: Array.isArray(book.comments) ? book.comments : [],
+      })),
+    })),
+  };
+}
+
+function echoesFromState(state) {
+  return normalizeBookComments(state).people
+    .flatMap((person) =>
+      person.finishedBooks
+        .filter((book) => book.note?.body)
+        .map((book) => ({
+          id: book.id,
+          noteId: book.id,
+          bookId: book.id,
+          userId: person.id,
+          userName: person.name,
+          title: book.title,
+          author: book.author || "",
+          finishedAt: book.finishedAt,
+          stars: book.stars || 0,
+          note: book.note,
+          comments: book.comments,
+        })),
+    )
+    .sort((a, b) => new Date(`${b.finishedAt || "1900-01-01"}T00:00:00`) - new Date(`${a.finishedAt || "1900-01-01"}T00:00:00`));
+}
+
+function commentsFromState(state, bookId) {
+  return echoesFromState(state)
+    .filter((echo) => !bookId || echo.bookId === bookId)
+    .flatMap((echo) =>
+      echo.comments.map((comment) => ({
+        ...comment,
+        noteId: comment.noteId || echo.bookId,
+        bookId: comment.bookId || echo.bookId,
+      })),
+    )
+    .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+}
+
+function appendComment(state, comment) {
+  const safeComment = {
+    id: comment.id || `comment-${crypto.randomUUID()}`,
+    noteId: comment.noteId || comment.bookId,
+    bookId: comment.bookId || comment.noteId,
+    userId: comment.userId,
+    userName: comment.userName,
+    content: String(comment.content || "").trim(),
+    createdAt: comment.createdAt || new Date().toISOString(),
+  };
+
+  if (!safeComment.bookId || !safeComment.userId || !safeComment.content) {
+    throw new Error("Invalid comment");
+  }
+
+  let found = false;
+  const nextState = normalizeBookComments(state);
+  nextState.people = nextState.people.map((person) => ({
+    ...person,
+    finishedBooks: person.finishedBooks.map((book) => {
+      if (book.id !== safeComment.bookId) return book;
+      found = true;
+      return {
+        ...book,
+        comments: [...book.comments, safeComment],
+      };
+    }),
+  }));
+
+  if (!found) throw new Error("Book not found");
+  return nextState;
+}
+
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
     "Content-Type": "application/json; charset=utf-8",
@@ -233,13 +322,32 @@ const server = http.createServer(async (request, response) => {
 
   try {
     if (url.pathname === "/api/state" && request.method === "GET") {
-      sendJson(response, 200, hasSupabase() ? await readSupabaseState() : readState());
+      sendJson(response, 200, normalizeBookComments(await readAppState()));
       return;
     }
 
     if (url.pathname === "/api/state" && request.method === "PUT") {
       const body = await readJsonBody(request);
-      sendJson(response, 200, hasSupabase() ? await writeSupabaseState(body) : writeState(body));
+      sendJson(response, 200, await writeAppState(normalizeBookComments(body)));
+      return;
+    }
+
+    if (url.pathname === "/api/echoes" && request.method === "GET") {
+      sendJson(response, 200, { echoes: echoesFromState(await readAppState()) });
+      return;
+    }
+
+    if (url.pathname === "/api/comments" && request.method === "GET") {
+      sendJson(response, 200, {
+        comments: commentsFromState(await readAppState(), url.searchParams.get("bookId")),
+      });
+      return;
+    }
+
+    if (url.pathname === "/api/comments" && request.method === "POST") {
+      const body = await readJsonBody(request);
+      const nextState = appendComment(await readAppState(), body);
+      sendJson(response, 200, await writeAppState(nextState));
       return;
     }
 

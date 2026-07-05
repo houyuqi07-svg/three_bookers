@@ -84,6 +84,7 @@ button {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  padding-bottom: 112px;
 }
 
 .topbar {
@@ -228,6 +229,30 @@ button {
   padding: 34px 0 58px;
 }
 
+.page-checkin .page-heading h2::after,
+.page-echoes .page-heading h2::after,
+.page-mine .page-heading h2::after {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 0.44em;
+  transform: translateY(-0.16em) rotate(-8deg);
+}
+
+.page-checkin .page-heading h2::after {
+  color: var(--gold);
+  content: "★";
+}
+
+.page-echoes .page-heading h2::after {
+  color: var(--mint);
+  content: "◌";
+}
+
+.page-mine .page-heading h2::after {
+  color: var(--green-soft);
+  content: "✎";
+}
+
 .page-heading {
   display: flex;
   align-items: end;
@@ -260,6 +285,246 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
+}
+
+.bottom-nav {
+  position: fixed;
+  right: max(14px, calc((100vw - 1120px) / 2));
+  bottom: 18px;
+  left: max(14px, calc((100vw - 1120px) / 2));
+  z-index: 35;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 8px;
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255, 253, 248, 0.9);
+  box-shadow: 5px 6px 0 var(--line);
+  backdrop-filter: blur(18px);
+}
+
+.bottom-nav-item {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 2px solid transparent;
+  border-radius: 20px;
+  color: var(--ink);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.bottom-nav-item span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 2px solid rgba(17, 17, 15, 0.18);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.64);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.bottom-nav-item:hover,
+.bottom-nav-item.is-active {
+  border-color: var(--line);
+  background: var(--gold);
+  box-shadow: 2px 3px 0 var(--line);
+}
+
+.bottom-nav-item:nth-child(2).is-active {
+  background: var(--mint);
+}
+
+.bottom-nav-item:nth-child(3).is-active {
+  background: var(--green-soft);
+}
+
+.echo-feed {
+  display: grid;
+  gap: 18px;
+}
+
+.echo-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 28px);
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 96% 12%, rgba(119, 232, 223, 0.24) 0 64px, transparent 66px),
+    linear-gradient(180deg, rgba(255, 253, 248, 0.96), rgba(249, 245, 255, 0.94));
+  box-shadow: var(--shadow);
+}
+
+.echo-card::before {
+  position: absolute;
+  right: 22px;
+  bottom: 18px;
+  color: rgba(17, 17, 15, 0.08);
+  content: "回";
+  font-size: 108px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.echo-meta,
+.echo-book,
+.echo-body,
+.comments {
+  position: relative;
+  z-index: 1;
+}
+
+.echo-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.echo-avatar {
+  background: var(--avatar);
+}
+
+.echo-stars {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--gold);
+  box-shadow: 2px 3px 0 var(--line);
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.echo-book {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+
+.echo-book h3 {
+  margin: 0;
+  font-size: clamp(22px, 4vw, 32px);
+  font-weight: 950;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.echo-book p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.echo-body {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 17px;
+  border: 2px solid rgba(17, 17, 15, 0.12);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.echo-body p {
+  margin: 0;
+  color: #26231f;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.78;
+}
+
+.comments {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 2px dashed rgba(17, 17, 15, 0.18);
+}
+
+.comments h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+.comment-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.comment-list {
+  display: grid;
+  gap: 9px;
+}
+
+.comment-item {
+  padding: 10px 12px;
+  border: 1.5px solid rgba(17, 17, 15, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 253, 248, 0.74);
+}
+
+.comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.comment-head strong {
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.comment-head span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.comment-item p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.6;
+}
+
+.comment-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.comment-form input {
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  outline: none;
+  background: #fff;
+  box-shadow: 3px 4px 0 rgba(17, 17, 15, 0.18);
+  font-weight: 750;
+}
+
+.comment-form input:focus {
+  background: #fffbe7;
+  box-shadow: 4px 5px 0 var(--line);
 }
 
 .daily-checkin-chart {
@@ -1170,7 +1435,7 @@ button {
 .toast {
   position: fixed;
   right: 18px;
-  bottom: 18px;
+  bottom: 94px;
   z-index: 50;
   max-width: min(340px, calc(100% - 36px));
   padding: 14px 16px;
@@ -1421,5 +1686,46 @@ button {
 
   .form-actions .button {
     flex: 1 1 100%;
+  }
+
+  .bottom-nav {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    gap: 6px;
+    border-radius: 24px;
+  }
+
+  .bottom-nav-item {
+    min-height: 46px;
+    gap: 5px;
+    font-size: 14px;
+  }
+
+  .bottom-nav-item span {
+    width: 23px;
+    height: 23px;
+    font-size: 12px;
+  }
+
+  .page-echoes {
+    width: min(100% - 22px, 820px);
+  }
+
+  .echo-card {
+    border-radius: 24px;
+    box-shadow: 5px 6px 0 var(--line);
+  }
+
+  .echo-meta {
+    align-items: flex-start;
+  }
+
+  .comment-form {
+    grid-template-columns: 1fr;
+  }
+
+  .comment-form .button {
+    width: 100%;
   }
 }
