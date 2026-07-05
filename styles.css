@@ -89,7 +89,7 @@ button {
 
 .topbar {
   position: sticky;
-  top: 14px;
+  top: calc(env(safe-area-inset-top) + 10px);
   z-index: 20;
   display: flex;
   width: min(1120px, calc(100% - 28px));
@@ -145,64 +145,55 @@ button {
   gap: 8px;
 }
 
-.identity-switcher {
+.header-actions {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 7px;
-  padding: 4px;
-  border: 2px solid rgba(17, 17, 15, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 253, 248, 0.7);
+  justify-content: flex-end;
+  gap: 10px;
 }
 
-.identity-locked {
-  display: inline-flex;
-  min-height: 40px;
+.total-stars {
+  display: grid;
+  min-width: 104px;
+  min-height: 48px;
+  align-content: center;
+  justify-items: center;
+  padding: 5px 13px;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  color: var(--ink);
+  background: #fff1a9;
+  box-shadow: 3px 4px 0 var(--line);
+}
+
+.total-stars strong {
+  font-size: 17px;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.total-stars span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.user-pill {
+  display: flex;
+  min-height: 42px;
   flex: 0 0 auto;
   align-items: center;
-  gap: 8px;
-  padding: 4px 12px 4px 6px;
-  border: 2px solid rgba(17, 17, 15, 0.12);
-  border-radius: 999px;
-  color: var(--ink);
-  background: rgba(255, 253, 248, 0.72);
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.identity-locked span {
-  padding: 6px 9px;
-  border-radius: 999px;
-  color: var(--muted);
-  background: rgba(17, 17, 15, 0.06);
-}
-
-.identity-locked strong {
-  padding: 6px 10px;
+  justify-content: center;
+  padding: 0 16px;
   border: 2px solid var(--line);
   border-radius: 999px;
-  background: var(--green-soft);
-  box-shadow: 2px 3px 0 var(--line);
-}
-
-.identity-button {
-  min-height: 32px;
-  padding: 0 11px;
-  border: 2px solid transparent;
-  border-radius: 999px;
   color: var(--ink);
-  background: transparent;
-  font-size: 13px;
-  font-weight: 900;
-  cursor: pointer;
-}
-
-.identity-button.is-active,
-.identity-button:hover {
-  border-color: var(--line);
   background: var(--green-soft);
   box-shadow: 2px 3px 0 var(--line);
+  font-size: 13px;
+  font-weight: 950;
 }
 
 .nav-button {
@@ -1494,8 +1485,8 @@ button {
   }
 
   .topbar {
-    position: relative;
-    top: 0;
+    position: sticky;
+    top: calc(env(safe-area-inset-top) + 8px);
     gap: 13px;
     border-radius: 26px;
     padding: 10px 12px 12px;
@@ -1514,23 +1505,19 @@ button {
     font-size: 11px;
   }
 
-  .nav {
-    width: 100%;
-  }
-
-  .identity-switcher {
+  .header-actions {
     width: 100%;
     justify-content: space-between;
   }
 
-  .identity-locked {
-    width: 100%;
-    justify-content: space-between;
+  .total-stars {
+    min-width: 118px;
+    justify-items: start;
+    padding-inline: 14px;
   }
 
-  .identity-button {
-    flex: 1;
-    padding: 0 6px;
+  .user-pill {
+    min-width: 86px;
   }
 
   .nav-button {

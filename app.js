@@ -277,6 +277,20 @@ function selectedFinishedBook() {
   return user.finishedBooks.find((book) => book.id === state.selectedBookId);
 }
 
+function bookStarCount(book) {
+  if (!book) return 0;
+  const stars = Number(book.stars);
+  const checkins = Number(book.checkins);
+  if (Number.isFinite(stars)) return stars;
+  if (Number.isFinite(checkins)) return checkins;
+  return 0;
+}
+
+function currentUserTotalStars() {
+  const user = currentUser();
+  return bookStarCount(user.currentBook) + user.finishedBooks.reduce((total, book) => total + bookStarCount(book), 0);
+}
+
 function readingGridSnapshot() {
   const grid = document.querySelector(".reading-grid");
   if (!grid || grid.scrollWidth <= grid.clientWidth) return null;
@@ -381,6 +395,8 @@ function pageHeader(title, subtitle = "") {
 }
 
 function renderShell(content) {
+  const user = currentUser();
+  const totalStars = currentUserTotalStars();
   const syncLabel = {
     loading: "连接中",
     shared: "共享中",
@@ -395,10 +411,16 @@ function renderShell(content) {
           <div class="brand-mark">★</div>
           <div>
             <h1 class="brand-title">三只书虫</h1>
-            <p class="brand-subtitle">当前身份：${escapeHtml(currentUser().name)} · ${syncLabel}</p>
+            <p class="brand-subtitle">${escapeHtml(user.name)} · ${syncLabel}</p>
           </div>
         </div>
-        ${renderIdentityControl()}
+        <div class="header-actions">
+          <div class="total-stars" aria-label="${escapeHtml(user.name)} 累计星星 ${totalStars} 颗">
+            <strong>⭐ ${totalStars}</strong>
+            <span>累计星星</span>
+          </div>
+          <div class="user-pill" aria-label="当前用户">${escapeHtml(user.name)}</div>
+        </div>
       </header>
       ${content}
       ${renderBottomNav()}
@@ -431,31 +453,6 @@ function renderBottomNav() {
         我的
       </button>
     </nav>
-  `;
-}
-
-function renderIdentityControl() {
-  if (lockedUserId) {
-    return `
-      <div class="identity-locked" aria-label="固定身份">
-        <span>固定身份</span>
-        <strong>${escapeHtml(currentUser().name)}</strong>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="identity-switcher" aria-label="选择身份">
-      ${state.people
-        .map(
-          (person) => `
-            <button class="identity-button ${person.id === state.currentUserId ? "is-active" : ""}" data-action="switch-user" data-user-id="${person.id}">
-              ${escapeHtml(person.name)}
-            </button>
-          `,
-        )
-        .join("")}
-    </div>
   `;
 }
 
