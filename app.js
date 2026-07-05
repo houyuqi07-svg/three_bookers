@@ -277,6 +277,46 @@ function selectedFinishedBook() {
   return user.finishedBooks.find((book) => book.id === state.selectedBookId);
 }
 
+function readingGridSnapshot() {
+  const grid = document.querySelector(".reading-grid");
+  if (!grid || grid.scrollWidth <= grid.clientWidth) return null;
+
+  const gridRect = grid.getBoundingClientRect();
+  const cards = [...grid.querySelectorAll(".reading-card[data-user-id]")];
+  const visibleCard = cards
+    .map((card) => {
+      const rect = card.getBoundingClientRect();
+      const visibleWidth = Math.min(rect.right, gridRect.right) - Math.max(rect.left, gridRect.left);
+      return {
+        userId: card.dataset.userId,
+        visibleWidth,
+      };
+    })
+    .sort((a, b) => b.visibleWidth - a.visibleWidth)[0];
+
+  return {
+    scrollLeft: grid.scrollLeft,
+    userId: visibleCard?.visibleWidth > 0 ? visibleCard.userId : "",
+  };
+}
+
+function restoreReadingGridSnapshot(snapshot) {
+  if (!snapshot) return;
+
+  window.requestAnimationFrame(() => {
+    const grid = document.querySelector(".reading-grid");
+    if (!grid) return;
+
+    const card = snapshot.userId ? grid.querySelector(`.reading-card[data-user-id="${snapshot.userId}"]`) : null;
+    if (card) {
+      grid.scrollLeft = card.offsetLeft - grid.offsetLeft;
+      return;
+    }
+
+    grid.scrollLeft = snapshot.scrollLeft;
+  });
+}
+
 function formatDate(dateString) {
   if (!dateString) return "未记录";
   const date = new Date(`${dateString}T00:00:00`);
@@ -567,7 +607,7 @@ function renderReadingCard(person) {
 
   if (!book) {
     return `
-      <article class="reading-card ${isMine ? "is-mine" : ""}">
+      <article class="reading-card ${isMine ? "is-mine" : ""}" data-user-id="${person.id}">
         <div class="card-inner">
           ${renderFriendRow(person, isMine, "未开始")}
           <div class="empty-reading">
@@ -587,7 +627,7 @@ function renderReadingCard(person) {
   const checkedToday = book.lastCheckinAt === todayKey();
 
   return `
-    <article class="reading-card ${isMine ? "is-mine" : ""}">
+    <article class="reading-card ${isMine ? "is-mine" : ""}" data-user-id="${person.id}">
       <div class="card-inner">
         ${renderFriendRow(person, isMine, checkedToday ? "今日已打卡" : "今日未打卡")}
         <div class="cover-wrap">${bookCover(book)}</div>
@@ -770,6 +810,7 @@ function renderModal() {
 }
 
 function render() {
+  const snapshot = readingGridSnapshot();
   const pages = {
     home: renderHome,
     echoes: renderEchoes,
@@ -779,6 +820,7 @@ function render() {
   };
 
   app.innerHTML = (pages[state.page] || renderHome)();
+  restoreReadingGridSnapshot(snapshot);
 }
 
 function navigate(page, extra = {}) {
