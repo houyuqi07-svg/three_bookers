@@ -18,6 +18,20 @@
 - 回响：展示已完成书籍的读后感 Feed 和评论。
 - 我的：查看自己的已读书籍、个人笔记和待补读后感。
 
+## 添加到手机桌面
+
+每个人先在手机浏览器里打开自己的专属入口：
+
+```text
+https://three-bookers.onrender.com/yuki
+https://three-bookers.onrender.com/momo
+https://three-bookers.onrender.com/lusi
+```
+
+然后选择“添加到主屏幕”。添加后桌面会显示三只书虫的星星图标，之后可以像打开 App 一样进入。
+
+已经为三个专属入口分别配置了桌面应用入口，Yuki/Momo/Lusi 从自己的链接添加到桌面后，会继续打开自己的页面。
+
 ## 本机临时共享
 
 1. 电脑和手机连接同一个 Wi-Fi。

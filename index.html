@@ -3,7 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7d9e6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="三只书虫" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>三只书虫</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png" />
+    <script>
+      (() => {
+        const role = window.location.pathname.split("/").filter(Boolean)[0];
+        const manifest = ["yuki", "momo", "lusi"].includes(role) ? `/manifest-${role}.webmanifest` : "/manifest.webmanifest";
+        const link = document.createElement("link");
+        link.rel = "manifest";
+        link.href = manifest;
+        document.head.appendChild(link);
+      })();
+    </script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
