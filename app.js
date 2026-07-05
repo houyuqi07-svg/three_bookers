@@ -84,8 +84,13 @@ function initialUserId() {
   return validUserIds.includes(savedUser) ? savedUser : "yuki";
 }
 
-function stableUserId(preferredUserId = state?.currentUserId) {
-  const nextUserId = lockedUserId || (validUserIds.includes(preferredUserId) ? preferredUserId : initialUserId());
+function stableUserId(preferredUserId) {
+  const stateUserId = typeof state !== "undefined" ? state.currentUserId : "";
+  const savedUserId = localStorage.getItem(USER_KEY);
+  const nextUserId =
+    lockedUserId ||
+    [preferredUserId, stateUserId, savedUserId].find((userId) => validUserIds.includes(userId)) ||
+    "yuki";
   localStorage.setItem(USER_KEY, nextUserId);
   return nextUserId;
 }
@@ -191,7 +196,7 @@ async function refreshSharedPeople() {
     if (!Array.isArray(data.people)) return;
     const currentUserId = stableUserId();
     const normalized = normalizeVisualState({ ...state, currentUserId, people: data.people });
-    state = { ...state, people: normalized.people };
+    state = { ...state, currentUserId, people: normalized.people };
     saveState();
     render();
   } catch {
