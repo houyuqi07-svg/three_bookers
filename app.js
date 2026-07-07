@@ -291,6 +291,29 @@ function currentUserTotalStars() {
   return bookStarCount(user.currentBook) + user.finishedBooks.reduce((total, book) => total + bookStarCount(book), 0);
 }
 
+function shortBookTitle(title = "", maxLength = 7) {
+  return title.length > maxLength ? `${title.slice(0, maxLength - 1)}…` : title;
+}
+
+function personRecentBooks(person, limit = 5) {
+  return [...person.finishedBooks]
+    .sort((a, b) => new Date(`${b.finishedAt || "1900-01-01"}T00:00:00`) - new Date(`${a.finishedAt || "1900-01-01"}T00:00:00`))
+    .slice(0, limit);
+}
+
+function sharedRecentBooks(limit = 14) {
+  return state.people
+    .flatMap((person) =>
+      personRecentBooks(person, 8).map((book) => ({
+        ...book,
+        ownerId: person.id,
+        ownerName: person.name,
+      })),
+    )
+    .sort((a, b) => new Date(`${b.finishedAt || "1900-01-01"}T00:00:00`) - new Date(`${a.finishedAt || "1900-01-01"}T00:00:00`))
+    .slice(0, limit);
+}
+
 function readingGridSnapshot() {
   const grid = document.querySelector(".reading-grid");
   if (!grid || grid.scrollWidth <= grid.clientWidth) return null;
@@ -433,6 +456,7 @@ function renderShell(content) {
 function navSection() {
   if (["finished", "note"].includes(state.page)) return "mine";
   if (state.page === "echoes") return "echoes";
+  if (state.page === "house") return "house";
   return "home";
 }
 
@@ -443,6 +467,10 @@ function renderBottomNav() {
       <button class="bottom-nav-item ${active === "home" ? "is-active" : ""}" data-route="home">
         <span>★</span>
         打卡
+      </button>
+      <button class="bottom-nav-item ${active === "house" ? "is-active" : ""}" data-route="house">
+        <span>⌂</span>
+        小书屋
       </button>
       <button class="bottom-nav-item ${active === "echoes" ? "is-active" : ""}" data-route="echoes">
         <span>◌</span>
@@ -466,6 +494,84 @@ function renderHome() {
       </section>
     </main>
   `);
+}
+
+function renderHouse() {
+  return renderShell(`
+    <main class="page house-page page-house">
+      ${pageHeader("小书屋", "三个人在同一个小书屋里读书，桌面和书架慢慢留下大家读过的书。")}
+      <section class="book-house" aria-label="三个人的小书屋">
+        <div class="house-sign">书屋</div>
+        <div class="house-backdrop">
+          <div class="wall-shelf wall-shelf-left">${renderHouseShelf(sharedRecentBooks(7), "left")}</div>
+          <div class="wall-shelf wall-shelf-right">${renderHouseShelf(sharedRecentBooks(14).slice(7), "right")}</div>
+          <div class="house-frame-note">阅读<br />思考<br />成长</div>
+        </div>
+        <div class="house-stage">
+          <div class="room-lamp" aria-hidden="true"></div>
+          <div class="room-plant" aria-hidden="true"></div>
+          <div class="house-friends">
+            ${state.people.map(renderHouseFriend).join("")}
+          </div>
+          <div class="shared-table">
+            <div class="table-books table-books-left">${renderHouseShelf(personRecentBooks(state.people[0], 4), "table")}</div>
+            <div class="table-books table-books-center">${renderHouseShelf(personRecentBooks(state.people[1], 4), "table")}</div>
+            <div class="table-books table-books-right">${renderHouseShelf(personRecentBooks(state.people[2], 4), "table")}</div>
+          </div>
+          <div class="drawer-row">
+            ${state.people.map(renderHouseDrawer).join("")}
+          </div>
+        </div>
+      </section>
+    </main>
+  `);
+}
+
+function renderHouseFriend(person) {
+  return `
+    <div class="house-friend house-friend-${person.id}">
+      <div class="friend-character">
+        <div class="headwear"></div>
+        <div class="character-head">
+          <div class="character-hair"></div>
+          <div class="character-face">
+            <span class="eye eye-left"></span>
+            <span class="eye eye-right"></span>
+            <span class="mouth"></span>
+          </div>
+        </div>
+        <div class="character-body">
+          <div class="reading-book"></div>
+        </div>
+      </div>
+      <div class="desk-name">${escapeHtml(person.name)}</div>
+    </div>
+  `;
+}
+
+function renderHouseDrawer(person) {
+  const books = personRecentBooks(person, 5);
+  return `
+    <div class="house-drawer house-drawer-${person.id}">
+      <div class="drawer-label">${escapeHtml(person.name)} 的已读</div>
+      <div class="drawer-books">
+        ${books.length ? renderHouseShelf(books, "drawer") : `<span class="empty-spine">等一本书</span>`}
+      </div>
+    </div>
+  `;
+}
+
+function renderHouseShelf(books, variant) {
+  if (!books.length) return `<span class="empty-spine">还没有书</span>`;
+  return books
+    .map(
+      (book, index) => `
+        <span class="book-spine spine-${index % 6} spine-${variant}" title="《${escapeHtml(book.title)}》">
+          ${escapeHtml(shortBookTitle(book.title))}
+        </span>
+      `,
+    )
+    .join("");
 }
 
 function renderEchoes() {
@@ -810,6 +916,7 @@ function render() {
   const snapshot = readingGridSnapshot();
   const pages = {
     home: renderHome,
+    house: renderHouse,
     echoes: renderEchoes,
     add: renderAddBook,
     finished: renderFinished,
