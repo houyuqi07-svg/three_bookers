@@ -967,6 +967,136 @@ button {
   }
 }
 
+.book-house {
+  display: grid;
+  gap: 18px;
+  min-height: auto;
+  padding: clamp(12px, 2.4vw, 22px);
+  background:
+    linear-gradient(rgba(17, 17, 15, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(17, 17, 15, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 12% 18%, rgba(217, 200, 255, 0.34) 0 9rem, transparent 9.2rem),
+    radial-gradient(circle at 88% 12%, rgba(119, 232, 223, 0.28) 0 10rem, transparent 10.2rem),
+    linear-gradient(180deg, #fff8ed 0%, #f8e5d3 100%);
+  background-size:
+    24px 24px,
+    24px 24px,
+    auto,
+    auto,
+    auto;
+}
+
+.house-scene-card {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(17, 17, 15, 0.74);
+  border-radius: 28px;
+  background: #fff7ea;
+  box-shadow: 6px 7px 0 rgba(17, 17, 15, 0.88);
+}
+
+.house-scene-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  object-position: center;
+  transform-origin: center;
+  animation: roomImageBreath 7s ease-in-out infinite;
+}
+
+.house-scene-sheen {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.22), transparent 34%),
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.24), transparent 34%);
+  pointer-events: none;
+}
+
+.house-library-panel {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: clamp(14px, 2.6vw, 22px);
+  border: 2px solid rgba(17, 17, 15, 0.74);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.78);
+  box-shadow: 5px 6px 0 rgba(17, 17, 15, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.house-library-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.house-library-heading strong {
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.house-library-heading span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.shared-spine-shelf {
+  display: flex;
+  min-height: 92px;
+  align-items: end;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 12px 12px 16px;
+  border: 2px solid rgba(112, 76, 40, 0.24);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, transparent 0 68%, rgba(183, 123, 76, 0.35) 69% 78%, transparent 79%),
+    rgba(255, 244, 225, 0.7);
+}
+
+.drawer-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+}
+
+.house-drawer {
+  min-height: 112px;
+  padding: 12px;
+  border: 2px solid rgba(112, 76, 40, 0.32);
+  border-radius: 18px;
+  background: rgba(255, 245, 230, 0.76);
+}
+
+.drawer-books {
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.spine-shared {
+  min-height: 74px;
+}
+
+.spine-drawer {
+  min-height: 58px;
+}
+
+@keyframes roomImageBreath {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.012);
+  }
+}
+
 .echo-feed {
   display: grid;
   gap: 18px;
@@ -2481,5 +2611,58 @@ button {
   .empty-spine {
     padding: 6px 7px;
     font-size: 10px;
+  }
+
+  .book-house {
+    gap: 12px;
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .house-scene-card {
+    border-radius: 22px;
+    box-shadow: 4px 5px 0 rgba(17, 17, 15, 0.82);
+  }
+
+  .house-scene-image {
+    aspect-ratio: 3 / 2;
+    min-height: 0;
+  }
+
+  .house-library-panel {
+    gap: 12px;
+    padding: 12px;
+    border-radius: 20px;
+    box-shadow: 4px 5px 0 rgba(17, 17, 15, 0.82);
+  }
+
+  .house-library-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .house-library-heading strong {
+    font-size: 17px;
+  }
+
+  .house-library-heading span {
+    font-size: 12px;
+  }
+
+  .shared-spine-shelf {
+    min-height: 78px;
+    gap: 4px;
+    padding: 10px 9px 13px;
+  }
+
+  .drawer-row {
+    gap: 8px;
+    margin: 0;
+  }
+
+  .house-drawer {
+    min-height: 88px;
+    padding: 9px 7px;
   }
 }

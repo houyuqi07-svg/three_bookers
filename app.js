@@ -501,22 +501,17 @@ function renderHouse() {
     <main class="page house-page page-house">
       ${pageHeader("小书屋", "三个人在同一个小书屋里读书，桌面和书架慢慢留下大家读过的书。")}
       <section class="book-house" aria-label="三个人的小书屋">
-        <div class="house-sign">书屋</div>
-        <div class="house-backdrop">
-          <div class="wall-shelf wall-shelf-left">${renderHouseShelf(sharedRecentBooks(7), "left")}</div>
-          <div class="wall-shelf wall-shelf-right">${renderHouseShelf(sharedRecentBooks(14).slice(7), "right")}</div>
-          <div class="house-frame-note">阅读<br />思考<br />成长</div>
+        <div class="house-scene-card">
+          <img class="house-scene-image" src="/assets/book-house-scene.png" alt="Yuki、Momo、Lusi 在小书屋一起看书" />
+          <div class="house-scene-sheen" aria-hidden="true"></div>
         </div>
-        <div class="house-stage">
-          <div class="room-lamp" aria-hidden="true"></div>
-          <div class="room-plant" aria-hidden="true"></div>
-          <div class="house-friends">
-            ${state.people.map(renderHouseFriend).join("")}
+        <div class="house-library-panel">
+          <div class="house-library-heading">
+            <strong>最近读过的书</strong>
+            <span>书脊来自三个人的已读记录</span>
           </div>
-          <div class="shared-table">
-            <div class="table-books table-books-left">${renderHouseShelf(personRecentBooks(state.people[0], 4), "table")}</div>
-            <div class="table-books table-books-center">${renderHouseShelf(personRecentBooks(state.people[1], 4), "table")}</div>
-            <div class="table-books table-books-right">${renderHouseShelf(personRecentBooks(state.people[2], 4), "table")}</div>
+          <div class="shared-spine-shelf">
+            ${renderHouseShelf(sharedRecentBooks(14), "shared")}
           </div>
           <div class="drawer-row">
             ${state.people.map(renderHouseDrawer).join("")}
@@ -525,28 +520,6 @@ function renderHouse() {
       </section>
     </main>
   `);
-}
-
-function renderHouseFriend(person) {
-  return `
-    <div class="house-friend house-friend-${person.id}">
-      <div class="friend-character">
-        <div class="headwear"></div>
-        <div class="character-head">
-          <div class="character-hair"></div>
-          <div class="character-face">
-            <span class="eye eye-left"></span>
-            <span class="eye eye-right"></span>
-            <span class="mouth"></span>
-          </div>
-        </div>
-        <div class="character-body">
-          <div class="reading-book"></div>
-        </div>
-      </div>
-      <div class="desk-name">${escapeHtml(person.name)}</div>
-    </div>
-  `;
 }
 
 function renderHouseDrawer(person) {
