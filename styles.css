@@ -86,6 +86,16 @@ body:has(.house-page) .app-shell {
   padding-bottom: 0;
 }
 
+body:has(.house-page) .topbar {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 14px);
+  left: 50%;
+  z-index: 45;
+  width: min(1120px, calc(100% - 28px));
+  margin: 0;
+  transform: translateX(-50%);
+}
+
 button,
 input,
 textarea {
@@ -986,10 +996,10 @@ button {
 .house-page {
   width: 100%;
   max-width: none;
-  height: calc(100svh - 106px);
+  height: 100svh;
   margin: 0;
   overflow: hidden;
-  padding: 10px 0 0;
+  padding: 0;
 }
 
 .book-house {
@@ -1022,7 +1032,6 @@ button {
   object-fit: cover;
   object-position: center center;
   transform-origin: center;
-  animation: roomImageBreath 7s ease-in-out infinite;
 }
 
 .house-scene-sheen {
@@ -2357,8 +2366,8 @@ button {
 
   .house-page {
     width: 100%;
-    height: calc(100svh - 104px);
-    padding-top: 8px;
+    height: 100svh;
+    padding-top: 0;
   }
 
   .page-heading h2 {
