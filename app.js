@@ -470,7 +470,7 @@ function renderBottomNav() {
       </button>
       <button class="bottom-nav-item ${active === "house" ? "is-active" : ""}" data-route="house">
         <span>⌂</span>
-        小书屋
+        书屋
       </button>
       <button class="bottom-nav-item ${active === "echoes" ? "is-active" : ""}" data-route="echoes">
         <span>◌</span>
@@ -502,19 +502,6 @@ function renderHouse() {
       <section class="book-house" aria-label="三个人的小书屋">
         <img class="house-scene-image" src="/assets/book-house-scene.png" alt="Yuki、Momo、Lusi 在小书屋一起看书" />
         <div class="house-scene-sheen" aria-hidden="true"></div>
-        <div class="house-room-title">
-          <h2>小书屋</h2>
-          <p>三个人的温暖书屋，一起阅读，一起成长。</p>
-        </div>
-        <div class="house-library-panel">
-          <div class="house-library-heading">
-            <strong>最近读过的书</strong>
-            <span>来自三个人的已读记录</span>
-          </div>
-          <div class="shared-spine-shelf">
-            ${renderHouseShelf(sharedRecentBooks(14), "shared")}
-          </div>
-        </div>
       </section>
     </main>
   `);
